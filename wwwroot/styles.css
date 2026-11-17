@@ -114,46 +114,36 @@ body {
   box-shadow: var(--shadow);
 }
 
-.prompt-panel {
-  margin-top: 0.4rem;
-  padding-top: 0.35rem;
-  border-top: 1px solid var(--border);
+.ask-ai-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  flex: 1 1 16rem;
+  min-width: min(100%, 14rem);
+}
+
+.ask-ai-filter__label {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.ask-ai-filter__form {
+  flex: 1 1 12rem;
   min-width: 0;
 }
 
-.prompt-panel__summary {
-  cursor: pointer;
-  font-size: 0.74rem;
-  font-weight: 600;
-  color: var(--muted);
-  list-style: none;
-  user-select: none;
-  line-height: 1.35;
+.filters-top__ai-hint {
+  margin: 0.25rem 0 0;
+  padding: 0 0.1rem;
 }
 
-.prompt-panel__summary::-webkit-details-marker {
-  display: none;
-}
-
-.prompt-panel__summary::before {
-  content: "▸";
-  display: inline-block;
-  margin-right: 0.3rem;
-  color: var(--muted);
-  transition: transform 0.15s ease;
-}
-
-.prompt-panel[open] .prompt-panel__summary::before {
-  transform: rotate(90deg);
-}
-
-.prompt-panel[open] .prompt-panel__summary {
-  color: var(--ink);
-}
-
-.prompt-panel__content {
-  margin-top: 0.35rem;
-  min-width: 0;
+.filters-top.has-ai-filter .ask-ai-filter {
+  outline: 1px solid #fcd34d;
+  outline-offset: 2px;
+  border-radius: 8px;
+  padding: 0.15rem 0.35rem;
+  background: #fffbeb;
 }
 
 .prompt-panel__row {

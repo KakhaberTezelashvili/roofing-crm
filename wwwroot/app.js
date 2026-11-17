@@ -564,6 +564,11 @@ function refreshLeads() {
 }
 
 function onCriteriaChange() {
+  if (ragPropertyFilter) {
+    ragPropertyFilter = null;
+    window.MapLeads?.clearAskAiSearch?.({ clearPrompt: false });
+  }
+
   searchState.radiusMiles = Number(radiusEl?.value ?? searchState.radiusMiles);
   updateCoordsDisplay();
   refreshSearchCircle();
@@ -580,6 +585,7 @@ function resetFiltersToDefault() {
 
   selectedLeadId = null;
   ragPropertyFilter = null;
+  window.MapLeads?.clearAskAiSearch?.({ clearPrompt: true });
   searchMarker?.closePopup();
   map?.closePopup();
 
@@ -740,6 +746,11 @@ function focusPropertiesByIds(propertyIds, { fitBounds = false, openPopup = fals
   }
 }
 
+function clearRagPropertyFilter() {
+  ragPropertyFilter = null;
+  refreshLeads();
+}
+
 function applyRagSearchResults(propertyIds) {
   if (!Array.isArray(propertyIds)) {
     ragPropertyFilter = null;
@@ -769,6 +780,7 @@ window.MapLeads = {
   },
   focusPropertiesByIds,
   applyRagSearchResults,
+  clearRagPropertyFilter,
 };
 
 loadMap();

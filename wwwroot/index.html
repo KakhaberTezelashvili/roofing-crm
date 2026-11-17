@@ -60,27 +60,26 @@
         </label>
         <span class="filter-divider" aria-hidden="true"></span>
         <button type="button" id="clear-filters" class="btn-ghost">Clear filters</button>
-      </div>
-      <details class="prompt-panel" id="prompt-panel">
-        <summary class="prompt-panel__summary">Ask AI</summary>
-        <div class="prompt-panel__content">
-          <form id="search-prompt-form" class="prompt-panel__row" aria-label="Search prompt">
+        <span class="filter-divider" aria-hidden="true"></span>
+        <div class="ask-ai-filter" id="ask-ai-filter">
+          <span class="chip-label ask-ai-filter__label">Ask AI</span>
+          <form id="search-prompt-form" class="prompt-panel__row ask-ai-filter__form" aria-label="Ask AI search">
             <input
               type="text"
               id="search-prompt"
               name="prompt"
               class="prompt-field"
               autocomplete="off"
-              aria-label="Search prompt"
+              aria-label="Ask AI"
               placeholder="e.g. open roofing permits older than five years"
             />
             <button type="submit" id="search-prompt-submit" class="btn-primary btn-compact prompt-panel__submit">
               Search
             </button>
           </form>
-          <p id="search-prompt-status" class="prompt-panel__status" hidden aria-live="polite"></p>
         </div>
-      </details>
+      </div>
+      <p id="search-prompt-status" class="prompt-panel__status filters-top__ai-hint" hidden aria-live="polite"></p>
     </section>
     <div class="main">
       <aside class="leads-panel" aria-label="Lead candidates">
@@ -124,6 +123,6 @@
   ></script>
   <script src="app.js"></script>
   <script src="crm.js"></script>
-  <script src="search-prompt.js?v=3"></script>
+  <script src="search-prompt.js?v=4"></script>
 </body>
 </html>

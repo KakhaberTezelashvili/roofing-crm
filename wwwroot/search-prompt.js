@@ -1,5 +1,6 @@
 (() => {
-  const promptPanel = document.querySelector("#prompt-panel");
+  const filtersTop = document.querySelector(".filters-top");
+  const askAiFilter = document.querySelector("#ask-ai-filter");
   const promptForm = document.querySelector("#search-prompt-form");
   const promptField = document.querySelector("#search-prompt");
   const submitBtn = document.querySelector("#search-prompt-submit");
@@ -11,9 +12,19 @@
     promptStatusEl.hidden = !visible || !message;
   }
 
-  promptPanel?.addEventListener("toggle", () => {
-    if (promptPanel.open) promptField?.focus();
-  });
+  function setAiFilterActive(active) {
+    filtersTop?.classList.toggle("has-ai-filter", Boolean(active));
+  }
+
+  function clearAskAiSearch({ clearPrompt = true } = {}) {
+    if (clearPrompt && promptField) promptField.value = "";
+    setStatus("");
+    setAiFilterActive(false);
+    window.MapLeads?.clearRagPropertyFilter?.();
+  }
+
+  window.MapLeads = window.MapLeads || {};
+  window.MapLeads.clearAskAiSearch = clearAskAiSearch;
 
   async function submitPrompt(event) {
     event.preventDefault();
@@ -54,9 +65,11 @@
 
       if (ids.length && window.MapLeads?.applyRagSearchResults) {
         window.MapLeads.applyRagSearchResults(ids);
+        setAiFilterActive(true);
         setStatus("");
       } else {
         window.MapLeads?.applyRagSearchResults?.([]);
+        setAiFilterActive(false);
         setStatus(
           "No properties match that query within your search radius. Widen the radius or click Clear filters."
         );
