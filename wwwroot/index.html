@@ -62,6 +62,23 @@
         <span class="filter-divider" aria-hidden="true"></span>
         <button type="button" id="clear-filters" class="btn-ghost">Clear filters</button>
       </div>
+      <details class="prompt-panel" id="prompt-panel">
+        <summary class="prompt-panel__summary">Natural language search</summary>
+        <form id="search-prompt-form" class="prompt-panel__body" aria-label="Search prompt">
+          <textarea
+            id="search-prompt"
+            name="prompt"
+            class="prompt-field"
+            rows="2"
+            aria-label="Search prompt"
+            placeholder="Describe roofing opportunities you're looking for…"
+          ></textarea>
+          <div class="prompt-panel__actions">
+            <button type="submit" id="search-prompt-submit" class="btn-primary btn-compact">Search</button>
+          </div>
+          <p id="search-prompt-status" class="panel-hint prompt-panel__status" hidden></p>
+        </form>
+      </details>
     </section>
     <div class="main">
       <aside class="leads-panel" aria-label="Lead candidates">
@@ -105,5 +122,6 @@
   ></script>
   <script src="app.js"></script>
   <script src="crm.js"></script>
+  <script src="search-prompt.js"></script>
 </body>
 </html>
