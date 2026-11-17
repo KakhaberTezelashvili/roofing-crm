@@ -1,6 +1,6 @@
 # Roofing CRM — map-based lead identification
 
-**Live app:** [https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net](https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net/)
+[**Live app**](https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net/) · [**Demo video**](https://www.loom.com/share/c450afb1118c42cf8b31b580db7b7010)
 
 ## Overview
 
@@ -57,7 +57,7 @@ Open the URL shown in the console (default profile: **http://localhost:5271**).
 
 ### Quick UI smoke path (≈2 minutes)
 
-1. Open the [live app](https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net/) or run locally (`dotnet run` with `OPENAI_API_KEY` → http://localhost:5271)
+1. Open [Live app](https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net/) or run locally (`dotnet run` with `OPENAI_API_KEY` → http://localhost:5271)
 2. Use filters and see how map adjusts according to it's values.
 3. Focus any lead and explore it's details.
 4. Save selected lead to CRM.
