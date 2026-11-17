@@ -57,23 +57,7 @@ Open the URL shown in the console (default profile: **http://localhost:5271**).
 
 ## How to verify it works
 
-Use this checklist against the user story acceptance criteria. Default demo data is **Travis County / Austin** (`MOCK_PROPERTIES` in `wwwroot/app.js`).
-
-### Checklist
-
-| # | Requirement | Do this | Expect that |
-|---|-------------|---------|-------------|
-| 1 | Default county + explore selected area | Open the app without changing location | Map centered on **Travis County**; status mentions Travis County; markers/list update when you move the pin or use GPS |
-| 2 | GPS and/or pin center | Click **Use My GPS** (allow permission) or click the map / drag the orange pin | Search circle re-centers; lead list refreshes for the new center |
-| 3 | Configurable radius | Set **Search radius** (e.g. 5 mi → 10 mi) | Orange circle grows/shrinks; candidate count changes |
-| 4 | Roofs older than threshold (default 15 yr) | Keep **Include aging roofs** on; **Min. roof age** = 15 | Properties with roof age ≥ 15 in radius appear (e.g. 1204 Barton Springs Rd, 22 yr) |
-| 5 | Open permits; emphasize long-open | **Open roofing permits** on; note stalled styling | Open permits listed; permits open ≥ 5 yr show **Stalled** badges and stronger map markers |
-| 6 | Permit details in UI | Click a list item or map marker | Popup shows **Status**, **Open duration**, **Contractor**, **BBB** (or “Not available”) |
-| 7 | Browsable lead list | Use left **Lead candidates** panel | Scrollable list; click row pans map and opens popup |
-| 8 | CRM create and manage | **Save to CRM** on a popup → open **CRM leads** drawer | Lead appears; change status/notes → **Save changes**; delete works; second save on same property → “already saved” / 409 |
-| 9 | RAG natural-language search | Ask AI: `open roofing permits older than five years` → **Search** | Map/list filters to matching IDs in radius (e.g. long-open permits); clearing filters resets |
-| 10 | No ingestion; pre-existing data only | Inspect repo | No ETL jobs; data from `app.js` + `RoofingKnowledgeSeed`; comment notes future API wiring |
-| 11 | Disabled future CRM sections | View top nav | **Lead identification** active; **Pipeline**, **Tasks**, **Quotes**, **Outreach**, **Reports**, **AI assistant** disabled (dashed / not clickable) |
+Default demo data is **Travis County / Austin** (`MOCK_PROPERTIES` in `wwwroot/app.js`).
 
 ### Sample API inputs / outputs
 
