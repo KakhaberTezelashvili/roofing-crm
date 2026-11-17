@@ -1,4 +1,4 @@
-# Roofing CRM — map-based lead identification
+# Roofing CRM
 
 [**Live app**](https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net/) · [**Demo video**](https://www.loom.com/share/c450afb1118c42cf8b31b580db7b7010)
 
