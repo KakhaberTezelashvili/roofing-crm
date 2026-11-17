@@ -15,4 +15,8 @@
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.74.0-preview" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="data\db.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
