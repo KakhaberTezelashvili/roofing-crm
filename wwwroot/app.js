@@ -3,6 +3,7 @@ const coordsEl = document.querySelector("#coords");
 const radiusEl = document.querySelector("#radius");
 const radiusValueEl = document.querySelector("#radius-value");
 const locateBtn = document.querySelector("#locate-me");
+const clearFiltersBtn = document.querySelector("#clear-filters");
 const propertyListEl = document.querySelector("#property-list");
 const propertyEmptyEl = document.querySelector("#property-empty");
 const leadSummaryEl = document.querySelector("#lead-summary");
@@ -117,23 +118,28 @@ const MOCK_PROPERTIES = [
   },
 ];
 
-const searchState = {
-  latitude: TRAVIS_COUNTY.latitude,
-  longitude: TRAVIS_COUNTY.longitude,
+const DEFAULT_FILTERS = {
   radiusMiles: 5,
-};
-
-const leadCriteria = {
   includeAgingRoof: true,
   minRoofAgeYears: 15,
   includeOpenPermit: true,
   minPermitOpenYears: 0,
 };
 
+const searchState = {
+  latitude: TRAVIS_COUNTY.latitude,
+  longitude: TRAVIS_COUNTY.longitude,
+  radiusMiles: DEFAULT_FILTERS.radiusMiles,
+};
+
+const leadCriteria = { ...DEFAULT_FILTERS };
+
 let map;
 let searchMarker;
 let searchCircle;
 let propertyLayer;
+let selectedLeadId = null;
+let currentCandidates = [];
 
 function setStatus(message) {
   if (statusEl) {
@@ -342,36 +348,84 @@ function markerStyleForLead(property, signals) {
   };
 }
 
+function hasDetail(value) {
+  return Boolean(value && value !== "—");
+}
+
+function bbbBadgeHtml(rating) {
+  if (!hasDetail(rating)) {
+    return '<span class="bbb bbb--na">Not available</span>';
+  }
+  return `<span class="bbb">${rating}</span>`;
+}
+
+function leadDetailHtml(property, distanceMi, signals) {
+  const permitOpen = property.permitOpen;
+  const permitStatus = permitOpen
+    ? `${property.permitStatus} · ${property.permitOpenYears} yr open`
+    : hasDetail(property.permitStatus)
+      ? property.permitStatus
+      : "No open roofing permit";
+  const signalText = [
+    signals.includes("aging") ? "Aging roof" : "",
+    signals.includes("permit") ? "Open permit" : "",
+  ]
+    .filter(Boolean)
+  .join(" · ") || "—";
+
+  return `
+    <header class="detail-head">
+      <h3 class="detail-address">${property.address}</h3>
+      <p class="detail-sub">${property.city} · ${distanceMi.toFixed(1)} mi from search center</p>
+      <div class="detail-badges">${leadBadgesHtml(property, signals)}</div>
+    </header>
+    <section class="detail-block">
+      <h4 class="detail-kicker">Property</h4>
+      <dl class="detail-dl">
+        <div><dt>Roof age (est.)</dt><dd>${property.roofAgeYears} years</dd></div>
+        <div><dt>Lead signals</dt><dd>${signalText}</dd></div>
+      </dl>
+    </section>
+    <section class="detail-block">
+      <h4 class="detail-kicker">Permit</h4>
+      <dl class="detail-dl">
+        <div><dt>Status</dt><dd>${permitStatus}</dd></div>
+        ${
+          permitOpen
+            ? `<div><dt>Open duration</dt><dd>${property.permitOpenYears} year${property.permitOpenYears === 1 ? "" : "s"}</dd></div>`
+            : ""
+        }
+      </dl>
+    </section>
+    <section class="detail-block">
+      <h4 class="detail-kicker">Contractor</h4>
+      <dl class="detail-dl">
+        <div><dt>Name</dt><dd>${hasDetail(property.contractorName) ? property.contractorName : "Not available"}</dd></div>
+        <div><dt>BBB rating</dt><dd>${bbbBadgeHtml(property.bbbRating)}</dd></div>
+      </dl>
+    </section>
+  `;
+}
+
 function propertyPopupHtml(property, distanceMi, signals) {
-  const lines = [
-    `<strong>${property.address}</strong>`,
-    property.city,
-    `Roof ~${property.roofAgeYears} yr · ${distanceMi.toFixed(1)} mi`,
-  ];
-  if (property.permitOpen) {
-    lines.push(
-      `Permit: ${property.permitStatus} · open ${property.permitOpenYears} yr`
-    );
-    lines.push(`Contractor: ${property.contractorName}`);
-    if (property.bbbRating !== "—") {
-      lines.push(`BBB: ${property.bbbRating}`);
-    }
+  return `<div class="lead-popup">${leadDetailHtml(property, distanceMi, signals)}</div>`;
+}
+
+function focusLead(property, signals, distanceMi, { pan = false, openPopup = false } = {}) {
+  selectedLeadId = property.id;
+  propertyListEl?.querySelectorAll(".property-item").forEach((btn) => {
+    btn.classList.toggle("is-selected", btn.dataset.id === property.id);
+  });
+  if (pan && map) {
+    map.setView([property.latitude, property.longitude], Math.max(map.getZoom(), 15));
   }
-  const tags = [];
-  if (signals.includes("aging")) {
-    tags.push("Aging roof");
+  if (openPopup) {
+    propertyLayer?.eachLayer((layer) => {
+      if (layer.propertyId === property.id) {
+        layer.openPopup();
+      }
+    });
   }
-  if (signals.includes("permit")) {
-    tags.push(
-      property.permitOpenYears >= LONG_OPEN_PERMIT_YEARS
-        ? "Long-open permit"
-        : "Open permit"
-    );
-  }
-  if (tags.length) {
-    lines.push(`<em>${tags.join(" · ")}</em>`);
-  }
-  return lines.join("<br>");
 }
 
 function leadBadgesHtml(property, signals) {
@@ -432,12 +486,7 @@ function renderPropertyList(rows) {
       </button>
     `;
     li.querySelector("button").addEventListener("click", () => {
-      map.setView([property.latitude, property.longitude], Math.max(map.getZoom(), 15));
-      propertyLayer.eachLayer((layer) => {
-        if (layer.propertyId === property.id) {
-          layer.openPopup();
-        }
-      });
+      focusLead(property, signals, distanceMi, { pan: true, openPopup: true });
     });
     propertyListEl.appendChild(li);
   }
@@ -453,7 +502,12 @@ function refreshLeads() {
 
   const inRadius = propertiesInRadius();
   const candidates = getLeadCandidates();
+  currentCandidates = candidates;
   updateLeadSummary(candidates, inRadius.length);
+
+  if (selectedLeadId && !candidates.some((c) => c.property.id === selectedLeadId)) {
+    selectedLeadId = null;
+  }
 
   for (const { property, signals } of candidates) {
     const distanceMi = haversineMiles(
@@ -467,9 +521,10 @@ function refreshLeads() {
       ...style,
       fillOpacity: 0.9,
     })
-      .bindPopup(propertyPopupHtml(property, distanceMi, signals))
+      .bindPopup(propertyPopupHtml(property, distanceMi, signals), { maxWidth: 320 })
       .addTo(propertyLayer);
     marker.propertyId = property.id;
+    marker.on("popupopen", () => focusLead(property, signals, distanceMi));
   }
 
   renderPropertyList(candidates);
@@ -481,6 +536,15 @@ function onCriteriaChange() {
   refreshSearchCircle();
   refreshLeads();
   statusForSearch(null);
+}
+
+function resetFiltersToDefault() {
+  if (radiusEl) radiusEl.value = String(DEFAULT_FILTERS.radiusMiles);
+  if (filterAgingRoofEl) filterAgingRoofEl.checked = DEFAULT_FILTERS.includeAgingRoof;
+  if (minRoofAgeEl) minRoofAgeEl.value = String(DEFAULT_FILTERS.minRoofAgeYears);
+  if (filterOpenPermitEl) filterOpenPermitEl.checked = DEFAULT_FILTERS.includeOpenPermit;
+  if (minPermitYearsEl) minPermitYearsEl.value = String(DEFAULT_FILTERS.minPermitOpenYears);
+  onCriteriaChange();
 }
 
 function onLocateClick() {
@@ -588,6 +652,10 @@ for (const el of criteriaInputs) {
 
 if (locateBtn) {
   locateBtn.addEventListener("click", onLocateClick);
+}
+
+if (clearFiltersBtn) {
+  clearFiltersBtn.addEventListener("click", resetFiltersToDefault);
 }
 
 loadMap();
