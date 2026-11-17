@@ -1,6 +1,6 @@
 # Roofing CRM — map-based lead identification
 
-**Live app:** [https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net/](https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net/) (Azure App Service; APIs on the same origin).
+**Live app:** [https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net](https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net/)
 
 ## Overview
 
@@ -44,11 +44,11 @@ flowchart LR
 ### Install and run
 
 ```bash
-git clone <your-repo-url> roofing-crm
+git clone https://github.com/KakhaberTezelashvili/roofing-crm
 
 cd roofing-crm
 
-dotnet run --project roofing-crm.csproj
+dotnet run
 ```
 
 Open the URL shown in the console (default profile: **http://localhost:5271**).
