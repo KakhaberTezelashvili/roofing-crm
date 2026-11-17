@@ -57,7 +57,26 @@
         </p>
         <ul id="property-list" class="property-list"></ul>
       </aside>
-      <div id="map" role="region" aria-label="Travis County map"></div>
+      <div class="map-stage">
+        <button
+          type="button"
+          id="crm-drawer-open"
+          class="crm-drawer-tab"
+          aria-expanded="false"
+          aria-controls="crm-panel"
+        >
+          CRM leads
+        </button>
+        <aside id="crm-panel" class="crm-panel" aria-label="CRM leads">
+          <div class="crm-panel__toolbar">
+            <h2 class="filter-label leads-heading">CRM leads</h2>
+            <button type="button" id="crm-drawer-close" class="btn-icon" aria-label="Close CRM leads panel">×</button>
+          </div>
+          <p id="crm-empty" class="panel-hint" hidden>No saved leads yet. Use “Save to CRM” on a map popup.</p>
+          <ul id="crm-lead-list" class="crm-lead-list"></ul>
+        </aside>
+        <div id="map" role="region" aria-label="Travis County map"></div>
+      </div>
     </div>
   </div>
   <script
@@ -66,5 +85,6 @@
     crossorigin=""
   ></script>
   <script src="app.js"></script>
+  <script src="crm.js"></script>
 </body>
 </html>

@@ -404,6 +404,9 @@ function leadDetailHtml(property, distanceMi, signals) {
         <div><dt>BBB rating</dt><dd>${bbbBadgeHtml(property.bbbRating)}</dd></div>
       </dl>
     </section>
+    <footer class="detail-actions">
+      <button type="button" class="btn-popup" data-add-crm data-property-id="${property.id}">Save to CRM</button>
+    </footer>
   `;
 }
 
@@ -524,7 +527,15 @@ function refreshLeads() {
       .bindPopup(propertyPopupHtml(property, distanceMi, signals), { maxWidth: 320 })
       .addTo(propertyLayer);
     marker.propertyId = property.id;
-    marker.on("popupopen", () => focusLead(property, signals, distanceMi));
+    marker.on("popupopen", () => {
+      focusLead(property, signals, distanceMi);
+      const saved = window.CrmLeads?.isPropertySaved(property.id);
+      const btn = marker.getPopup()?.getElement()?.querySelector("[data-add-crm]");
+      if (btn) {
+        btn.disabled = Boolean(saved);
+        btn.textContent = saved ? "In CRM" : "Save to CRM";
+      }
+    });
   }
 
   renderPropertyList(candidates);
@@ -657,5 +668,11 @@ if (locateBtn) {
 if (clearFiltersBtn) {
   clearFiltersBtn.addEventListener("click", resetFiltersToDefault);
 }
+
+window.MapLeads = {
+  getCandidateByPropertyId(id) {
+    return currentCandidates.find((row) => row.property.id === id);
+  },
+};
 
 loadMap();
