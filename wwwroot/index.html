@@ -14,6 +14,20 @@
 </head>
 <body>
   <div class="app-shell">
+    <header class="app-header">
+      <p class="app-header__brand">Roofing CRM</p>
+      <nav class="module-nav" aria-label="CRM modules">
+        <span class="module-tab is-active" aria-current="page">Lead identification</span>
+        <span class="module-tab is-disabled" aria-disabled="true" title="Coming soon — not in this release">Pipeline</span>
+        <span class="module-tab is-disabled" aria-disabled="true" title="Coming soon — not in this release">Tasks</span>
+        <span class="module-tab is-disabled" aria-disabled="true" title="Coming soon — not in this release">Quotes</span>
+        <span class="module-tab is-disabled" aria-disabled="true" title="Coming soon — not in this release">Outreach</span>
+        <span class="module-tab is-disabled" aria-disabled="true" title="Coming soon — not in this release">Reports</span>
+        <span class="module-tab is-disabled" aria-disabled="true" title="Coming soon — not in this release">AI assistant</span>
+      </nav>
+    </header>
+
+    <div class="module-view">
     <section class="filters-top" aria-label="Search and lead filters">
       <p id="status" class="sr-only" aria-live="polite">Loading map…</p>
       <span id="coords" class="sr-only" aria-hidden="true">—</span>
@@ -64,8 +78,11 @@
           class="crm-drawer-tab"
           aria-expanded="false"
           aria-controls="crm-panel"
+          title="Open saved CRM leads"
         >
-          CRM leads
+          <span class="crm-drawer-tab__icon" aria-hidden="true">◂</span>
+          <span class="crm-drawer-tab__label">CRM leads</span>
+          <span id="crm-drawer-count" class="crm-drawer-tab__badge" hidden>0</span>
         </button>
         <aside id="crm-panel" class="crm-panel" aria-label="CRM leads">
           <div class="crm-panel__toolbar">
@@ -78,6 +95,8 @@
         <div id="map" role="region" aria-label="Travis County map"></div>
       </div>
     </div>
+    </div>
+
   </div>
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"

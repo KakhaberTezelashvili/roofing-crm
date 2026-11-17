@@ -601,6 +601,7 @@ function loadMap() {
     zoomControl: true,
     scrollWheelZoom: true,
   }).setView([TRAVIS_COUNTY.latitude, TRAVIS_COUNTY.longitude], TRAVIS_COUNTY.zoom);
+  if (window.MapLeads) window.MapLeads.map = map;
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
@@ -670,6 +671,7 @@ if (clearFiltersBtn) {
 }
 
 window.MapLeads = {
+  map: null,
   getCandidateByPropertyId(id) {
     return currentCandidates.find((row) => row.property.id === id);
   },
