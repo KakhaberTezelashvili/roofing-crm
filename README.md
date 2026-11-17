@@ -1,46 +1,126 @@
-# Roofing CRM & Lead Identification UI
+# Roofing CRM — map-based lead identification
 
-## Context
+## Overview
 
-Roofing companies need a practical CRM for finding and qualifying residential and commercial roofing leads in their service area. The immediate requirement is a map-based CRM that helps sales teams explore local properties, surface roofs that are aging or have stalled open permits, and turn those signals into actionable outreach opportunities.
+This repository delivers a **map-based roofing lead CRM** for sales teams to explore properties in a service area, surface aging roofs and long-open permits, inspect contractor and BBB details, and save prospects as managed CRM records. It implements the **Roofing CRM & Lead Identification** user story: lead discovery and qualification on pre-existing property/permit data, without building ingestion pipelines. The UI is a static **Leaflet** front end (`wwwroot/`) backed by an **ASP.NET Core** API for CRM persistence and **RAG** search. A natural-language **Ask AI** flow combines vector retrieval, deterministic query constraints, and a grounded chat completion so users can narrow the map to relevant opportunities inside the current search radius.
 
-Data gathering and ingestion pipelines are covered by a separate user story and are **out of scope** for this work. This story assumes property, permit, and related enrichment data are already available for the UI and agent to consume.
+---
 
-## Description
+## Architecture
 
-Create a map-based roofing lead CRM that enables users to locate properties from their current GPS position or a pin drop on the map, set a search radius, and review candidate roofs that meet lead criteria—primarily roof age (for example, older than 15 years) and open roofing permits (especially permits that have remained open for many years).
+One **ASP.NET Core** app serves the static UI and two APIs. The **map and filters** run in the browser over demo data in `wwwroot/app.js`. **Saved leads** go to `data/db.json`. **Ask AI** uses seeded facts in `RoofingKnowledgeSeed`, an in-memory vector index built at startup, and OpenAI for embeddings and a short grounded answer.
 
-The UI should present property and permit details, including contractor information and BBB rating scores where available. Users should also be able to query the platform in natural language through a RAG-backed agent to discover roofing opportunities (for example, “show me open roofing permits older than five years within five miles of [city xyz]”).
+```mermaid
+flowchart LR
+  UI[Browser UI] --> API[ASP.NET Core]
+  API --> CRM[(db.json)]
+  API --> RAG[RAG search]
+  RAG --> OAI[OpenAI]
+```
 
-## Acceptance Criteria
-- Default the map and search experience to a particular county, with support for exploring properties in the user’s selected area.
-- Allow users to center property search on current GPS location and/or a pin dropped on the map.
-- Allow users to set a configurable search radius around the selected location.
-- Display properties within the radius that have roofs older than a configurable age threshold (default suggestion: 15 years).
-- Display properties within the radius that have open roofing permits, with emphasis on permits that have remained open for an extended period.
-- Show permit details in the UI, including permit status, age/open duration, contractor name, and BBB rating score when available.
-- Present a browsable list of matching roofing lead candidates derived from the map/radius filters.
-- Support creating and managing CRM lead records from identified properties and permits.
-- Provide a RAG-backed agent that answers natural-language queries about roofing opportunities using available property and permit data.
-- Keep data gathering, ingestion, and source-system integration out of scope; consume pre-existing/available datasets.
-- Show (disabled) sections on the CRM that would expand the product beyond the initial lead-identification workflow.
 
-## Demo Transcript
-- Open the CRM centered on a particular county.
-- Drop a pin (or use GPS) and set a search radius.
-- Show roofs older than the age threshold (e.g., 15 years) within the radius.
-- Highlight properties with open roofing permits, prioritizing long-open permits.
-- Open a selected property/permit and review contractor details and BBB rating where available.
-- Convert one or more matches into CRM lead records.
-- Ask the RAG agent a natural-language query for roofing opportunities in the area and show relevant results.
-- Demonstrate filtering leads by roof age, permit status/open duration, and location radius.
-- Show disabled/placeholder sections for future CRM expansions beyond lead identification.
 
-## Out of Scope
-- Property, permit, ownership, or enrichment data collection and ingestion pipelines (separate story).
-- Live BBB API integration beyond displaying scores already present in available data.
-- Actual outbound messaging to property owners (can be mocked or deferred).
+**Design choices**
 
-## Reference
-- [Soofi XYZ Team Kit](https://github.com/soofi-xyz/soofi-xyz-team-kit)
-- [Elephant Oracle Skills](https://github.com/elephant-xyz/skills)
+- Database - in-memory JSON file.
+- RAG - retrieve top‑K similar docs from in-memory vector store.
+- Models: `text-embedding-3-small`, `gpt-4o-mini` (see `appsettings.json`).
+
+---
+
+## Setup and run instructions
+
+### Prerequisites
+
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- Valid **OpenAI API key** with access to the configured chat and embedding models
+
+### Clone and install
+
+```bash
+git clone <your-repo-url> roofing-crm
+cd roofing-crm
+dotnet restore roofing-crm.csproj
+```
+
+`dotnet build roofing-crm.csproj -c Release` completes successfully on a fresh restore (verified in this repo).
+
+### Run
+
+```bash
+dotnet run --project roofing-crm.csproj
+```
+
+Open the URL shown in the console (default profile: **http://localhost:5271**).
+
+Wait for log lines indicating the vector index is ready before using **Ask AI**.
+
+### Run (published build)
+
+```bash
+dotnet publish roofing-crm.csproj -c Release -o ./publish
+export OPENAI_API_KEY="sk-your-key"   # or set in PowerShell
+dotnet ./publish/RoofingCrm.dll
+```
+
+---
+
+## How to verify it works
+
+Use this checklist against the user story acceptance criteria. Default demo data is **Travis County / Austin** (`MOCK_PROPERTIES` in `wwwroot/app.js`).
+
+### Checklist
+
+| # | Requirement | Do this | Expect that |
+|---|-------------|---------|-------------|
+| 1 | Default county + explore selected area | Open the app without changing location | Map centered on **Travis County**; status mentions Travis County; markers/list update when you move the pin or use GPS |
+| 2 | GPS and/or pin center | Click **Use My GPS** (allow permission) or click the map / drag the orange pin | Search circle re-centers; lead list refreshes for the new center |
+| 3 | Configurable radius | Set **Search radius** (e.g. 5 mi → 10 mi) | Orange circle grows/shrinks; candidate count changes |
+| 4 | Roofs older than threshold (default 15 yr) | Keep **Include aging roofs** on; **Min. roof age** = 15 | Properties with roof age ≥ 15 in radius appear (e.g. 1204 Barton Springs Rd, 22 yr) |
+| 5 | Open permits; emphasize long-open | **Open roofing permits** on; note stalled styling | Open permits listed; permits open ≥ 5 yr show **Stalled** badges and stronger map markers |
+| 6 | Permit details in UI | Click a list item or map marker | Popup shows **Status**, **Open duration**, **Contractor**, **BBB** (or “Not available”) |
+| 7 | Browsable lead list | Use left **Lead candidates** panel | Scrollable list; click row pans map and opens popup |
+| 8 | CRM create and manage | **Save to CRM** on a popup → open **CRM leads** drawer | Lead appears; change status/notes → **Save changes**; delete works; second save on same property → “already saved” / 409 |
+| 9 | RAG natural-language search | Ask AI: `open roofing permits older than five years` → **Search** | Map/list filters to matching IDs in radius (e.g. long-open permits); clearing filters resets |
+| 10 | No ingestion; pre-existing data only | Inspect repo | No ETL jobs; data from `app.js` + `RoofingKnowledgeSeed`; comment notes future API wiring |
+| 11 | Disabled future CRM sections | View top nav | **Lead identification** active; **Pipeline**, **Tasks**, **Quotes**, **Outreach**, **Reports**, **AI assistant** disabled (dashed / not clickable) |
+
+### Sample API inputs / outputs
+
+**RAG search**
+
+```bash
+curl -s -X POST http://localhost:5271/api/search/prompt \
+  -H "Content-Type: application/json" \
+  -d "{\"prompt\":\"open roofing permits older than five years\",\"latitude\":30.2672,\"longitude\":-97.7431,\"radiusMiles\":5}"
+```
+
+Expected (shape): JSON with `matchedProperties` (array of `propertyId`, `address`, `latitude`, `longitude`), `answer` (string), and `retrievedContext` (string array). Example property id for a long-open permit in demo data: `"p5"` (9901 Brodie Ln).
+
+**Create CRM lead** (normally done from UI; API for verification)
+
+```bash
+curl -s -X POST http://localhost:5271/api/leads \
+  -H "Content-Type: application/json" \
+  -d "{\"propertyId\":\"p1\",\"address\":\"1204 Barton Springs Rd\",\"city\":\"Austin\",\"latitude\":30.2634,\"longitude\":-97.7712,\"roofAgeYears\":22,\"permitOpen\":true,\"permitOpenYears\":6,\"permitStatus\":\"Open\",\"contractorName\":\"Lone Star Roofing LLC\",\"bbbRating\":\"B+\",\"leadSignals\":[\"aging\",\"permit\"]}"
+```
+
+Expected: HTTP **201** with JSON body including `id`, `status`: `"New"`. Repeating the same `propertyId` → HTTP **409**.
+
+**List leads**
+
+```bash
+curl -s http://localhost:5271/api/leads
+```
+
+Expected: JSON array of saved leads.
+
+### Quick UI smoke path (≈2 minutes)
+
+1. `dotnet run` with `OPENAI_API_KEY` set → open http://localhost:5271
+2. Confirm lead candidates appear at default center and 5 mi radius
+3. Open **9901 Brodie Ln** → verify permit 8 yr open, contractor, BBB **C**
+4. **Save to CRM** → drawer shows one lead
+5. Run Ask AI sample prompt → list/map narrows to matching properties
+
+---
