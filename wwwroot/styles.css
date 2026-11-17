@@ -186,26 +186,60 @@ body {
   position: absolute;
   z-index: 1050;
   top: 50%;
-  right: 0.5rem;
+  right: 0;
   transform: translateY(-50%);
-  padding: 0.55rem 0.5rem;
-  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.55rem 0.42rem 0.6rem;
+  border: 1px solid #d6d3d1;
   border-right: none;
   border-radius: 8px 0 0 8px;
-  background: var(--surface);
-  color: var(--ink);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  line-height: 1.2;
-  writing-mode: vertical-rl;
+  background: #44403c;
+  color: #fafaf9;
   cursor: pointer;
-  box-shadow: var(--shadow);
+  box-shadow: -2px 0 8px rgb(28 25 23 / 10%);
 }
 
 .crm-drawer-tab:hover {
-  background: var(--accent-soft);
+  background: #292524;
+}
+
+.crm-drawer-tab__icon {
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.crm-drawer-tab__label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.crm-drawer-tab__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: #fafaf9;
+  color: #44403c;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.crm-drawer-tab__badge[hidden] {
+  display: none;
 }
 
 .crm-drawer-tab[hidden] {

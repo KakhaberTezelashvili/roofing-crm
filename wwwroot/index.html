@@ -64,8 +64,11 @@
           class="crm-drawer-tab"
           aria-expanded="false"
           aria-controls="crm-panel"
+          title="Open saved CRM leads"
         >
-          CRM leads
+          <span class="crm-drawer-tab__icon" aria-hidden="true">◂</span>
+          <span class="crm-drawer-tab__label">CRM leads</span>
+          <span id="crm-drawer-count" class="crm-drawer-tab__badge" hidden>0</span>
         </button>
         <aside id="crm-panel" class="crm-panel" aria-label="CRM leads">
           <div class="crm-panel__toolbar">

@@ -60,11 +60,26 @@ function toCreatePayload(property, signals) {
   };
 }
 
+function updateDrawerTabBadge() {
+  const badge = document.querySelector("#crm-drawer-count");
+  if (!badge) {
+    return;
+  }
+  if (crmLeads.length === 0) {
+    badge.hidden = true;
+    return;
+  }
+  badge.hidden = false;
+  badge.textContent = String(crmLeads.length);
+  badge.setAttribute("aria-label", `${crmLeads.length} saved leads`);
+}
+
 function renderCrmLeads() {
   if (!crmUi.list || !crmUi.empty) {
     return;
   }
 
+  updateDrawerTabBadge();
   crmUi.list.replaceChildren();
 
   if (crmLeads.length === 0) {
