@@ -1,54 +1,73 @@
-const promptPanel = document.querySelector("#prompt-panel");
-const promptForm = document.querySelector("#search-prompt-form");
-const promptField = document.querySelector("#search-prompt");
-const submitBtn = document.querySelector("#search-prompt-submit");
-const statusEl = document.querySelector("#search-prompt-status");
+(() => {
+  const promptPanel = document.querySelector("#prompt-panel");
+  const promptForm = document.querySelector("#search-prompt-form");
+  const promptField = document.querySelector("#search-prompt");
+  const submitBtn = document.querySelector("#search-prompt-submit");
+  const promptStatusEl = document.querySelector("#search-prompt-status");
 
-function setStatus(message, visible = true) {
-  if (!statusEl) return;
-  statusEl.textContent = message;
-  statusEl.hidden = !visible || !message;
-}
-
-promptPanel?.addEventListener("toggle", () => {
-  if (promptPanel.open) {
-    promptField?.focus();
-  }
-});
-
-async function submitPrompt(event) {
-  event.preventDefault();
-
-  const prompt = promptField?.value.trim() ?? "";
-  if (!prompt) {
-    setStatus("Enter a search prompt.");
-    promptField?.focus();
-    return;
+  function setStatus(message, visible = true) {
+    if (!promptStatusEl) return;
+    promptStatusEl.textContent = message;
+    promptStatusEl.hidden = !visible || !message;
   }
 
-  setStatus("Sending…");
-  submitBtn.disabled = true;
+  promptPanel?.addEventListener("toggle", () => {
+    if (promptPanel.open) promptField?.focus();
+  });
 
-  try {
-    const response = await fetch("/api/search/prompt", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt }),
-    });
+  async function submitPrompt(event) {
+    event.preventDefault();
 
-    const payload = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      setStatus(typeof payload.error === "string" ? payload.error : "Could not send prompt.");
+    const prompt = promptField?.value.trim() ?? "";
+    if (!prompt) {
+      setStatus("Enter a search prompt.");
+      promptField?.focus();
       return;
     }
 
-    setStatus("Prompt received by the server.");
-  } catch {
-    setStatus("Network error. Try again.");
-  } finally {
-    submitBtn.disabled = false;
-  }
-}
+    const mapCtx = window.MapLeads?.getSearchState?.() ?? {};
 
-promptForm?.addEventListener("submit", submitPrompt);
+    setStatus("Searching…");
+    submitBtn.disabled = true;
+
+    try {
+      const response = await fetch("/api/search/prompt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt,
+          latitude: mapCtx.latitude,
+          longitude: mapCtx.longitude,
+          radiusMiles: mapCtx.radiusMiles,
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setStatus(typeof payload.error === "string" ? payload.error : "Search failed.");
+        return;
+      }
+
+      const matches = Array.isArray(payload.matchedProperties) ? payload.matchedProperties : [];
+      const ids = [...new Set(matches.map((m) => m.propertyId).filter(Boolean))];
+
+      if (ids.length && window.MapLeads?.applyRagSearchResults) {
+        window.MapLeads.applyRagSearchResults(ids);
+        setStatus("");
+      } else {
+        window.MapLeads?.applyRagSearchResults?.([]);
+        setStatus(
+          "No properties match that query within your search radius. Widen the radius or click Clear filters."
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("Network error. Is the app running?");
+    } finally {
+      submitBtn.disabled = false;
+    }
+  }
+
+  promptForm?.addEventListener("submit", submitPrompt);
+})();

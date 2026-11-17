@@ -140,6 +140,7 @@ let searchCircle;
 let propertyLayer;
 let selectedLeadId = null;
 let currentCandidates = [];
+let ragPropertyFilter = null;
 
 function setStatus(message) {
   if (statusEl) {
@@ -243,7 +244,28 @@ function propertiesInRadius() {
   );
 }
 
+function leadSignalsForProperty(property) {
+  const signals = [];
+  if (property.roofAgeYears >= leadCriteria.minRoofAgeYears) signals.push("aging");
+  if (property.permitOpen && property.permitOpenYears >= leadCriteria.minPermitOpenYears) {
+    signals.push("permit");
+  }
+  return signals;
+}
+
 function getLeadCandidates() {
+  if (ragPropertyFilter) {
+    return propertiesInRadius()
+      .filter((p) => ragPropertyFilter.has(p.id))
+      .map((p) => ({
+        property: p,
+        match: true,
+        signals: leadSignalsForProperty(p),
+        priority: leadPriority(p, leadSignalsForProperty(p)),
+      }))
+      .sort((a, b) => b.priority - a.priority);
+  }
+
   return propertiesInRadius()
     .map((p) => {
       const { match, signals } = matchesLeadCriteria(p);
@@ -557,6 +579,7 @@ function resetFiltersToDefault() {
   if (minPermitYearsEl) minPermitYearsEl.value = String(DEFAULT_FILTERS.minPermitOpenYears);
 
   selectedLeadId = null;
+  ragPropertyFilter = null;
   searchMarker?.closePopup();
   map?.closePopup();
 
@@ -680,11 +703,72 @@ if (clearFiltersBtn) {
   clearFiltersBtn.addEventListener("click", resetFiltersToDefault);
 }
 
+function focusPropertiesByIds(propertyIds, { fitBounds = false, openPopup = false } = {}) {
+  if (!map || !propertyIds?.length) return;
+
+  const properties = propertyIds
+    .map((id) => MOCK_PROPERTIES.find((p) => p.id === id))
+    .filter(Boolean);
+
+  if (!properties.length) return;
+
+  if (fitBounds || properties.length > 1) {
+    map.fitBounds(
+      L.latLngBounds(properties.map((p) => [p.latitude, p.longitude])),
+      { padding: [48, 48], maxZoom: 14 }
+    );
+  } else {
+    const p = properties[0];
+    map.setView([p.latitude, p.longitude], Math.max(map.getZoom(), 14));
+  }
+
+  for (const property of properties) {
+    if (openPopup) {
+      propertyLayer?.eachLayer((layer) => {
+        if (layer.propertyId === property.id) layer.openPopup();
+      });
+    }
+    const row = window.MapLeads.getCandidateByPropertyId(property.id);
+    if (row) {
+      focusLead(property, row.signals, haversineMiles(
+        searchState.latitude,
+        searchState.longitude,
+        property.latitude,
+        property.longitude
+      ), { pan: false, openPopup: false });
+    }
+  }
+}
+
+function applyRagSearchResults(propertyIds) {
+  if (!Array.isArray(propertyIds)) {
+    ragPropertyFilter = null;
+  } else if (propertyIds.length === 0) {
+    ragPropertyFilter = new Set();
+  } else {
+    ragPropertyFilter = new Set(propertyIds);
+  }
+  refreshLeads();
+  if (propertyIds?.length) {
+    focusPropertiesByIds(propertyIds, {
+      fitBounds: propertyIds.length > 1,
+      openPopup: true,
+    });
+  }
+}
+
 window.MapLeads = {
   map: null,
   getCandidateByPropertyId(id) {
     return currentCandidates.find((row) => row.property.id === id);
   },
+  getSearchState() {
+    readLeadCriteriaFromUi();
+    searchState.radiusMiles = Number(radiusEl?.value ?? searchState.radiusMiles);
+    return { ...searchState };
+  },
+  focusPropertiesByIds,
+  applyRagSearchResults,
 };
 
 loadMap();
