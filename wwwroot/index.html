@@ -13,14 +13,51 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <div>
-      <p class="eyebrow">Lead identification</p>
-      <h1>Roofing CRM</h1>
+  <div class="app-shell">
+    <section class="filters-top" aria-label="Search and lead filters">
+      <p id="status" class="sr-only" aria-live="polite">Loading map…</p>
+      <div class="filters-bar">
+        <button type="button" id="locate-me" class="btn-primary btn-compact" title="Center search on your GPS position">GPS</button>
+        <code id="coords" class="coords-chip" title="Search center — click map or drag marker">—</code>
+        <span class="filter-divider" aria-hidden="true"></span>
+        <label class="filter-chip" for="radius">
+          <span class="chip-label">Radius</span>
+          <input type="range" id="radius" class="chip-range" min="1" max="25" value="5" step="1" />
+          <span id="radius-value" class="chip-value">5 mi</span>
+        </label>
+        <span class="filter-divider" aria-hidden="true"></span>
+        <label class="filter-chip check-chip" for="filter-aging-roof">
+          <input type="checkbox" id="filter-aging-roof" checked />
+          <span class="chip-label">Aging</span>
+        </label>
+        <label class="filter-chip" for="min-roof-age">
+          <span class="chip-label">≥</span>
+          <input type="range" id="min-roof-age" class="chip-range" min="5" max="40" value="15" step="1" aria-label="Minimum roof age in years" />
+          <span id="min-roof-age-value" class="chip-value">15 yr</span>
+        </label>
+        <span class="filter-divider" aria-hidden="true"></span>
+        <label class="filter-chip check-chip" for="filter-open-permit">
+          <input type="checkbox" id="filter-open-permit" checked />
+          <span class="chip-label">Permit</span>
+        </label>
+        <label class="filter-chip" for="min-permit-years">
+          <span class="chip-label">open ≥</span>
+          <input type="range" id="min-permit-years" class="chip-range" min="0" max="15" value="0" step="1" aria-label="Minimum years permit open" />
+          <span id="min-permit-years-value" class="chip-value">0 yr</span>
+        </label>
+      </div>
+    </section>
+    <div class="main">
+      <aside class="leads-panel" aria-label="Lead candidates">
+        <h2 class="filter-label leads-heading">Lead candidates</h2>
+        <p id="property-empty" class="panel-hint" hidden>
+          No leads match. Adjust filters or move the pin.
+        </p>
+        <ul id="property-list" class="property-list"></ul>
+      </aside>
+      <div id="map" role="region" aria-label="Travis County map"></div>
     </div>
-    <p id="status">Loading map…</p>
-  </header>
-  <div id="map" role="region" aria-label="Travis County map"></div>
+  </div>
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
