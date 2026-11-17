@@ -2,7 +2,13 @@
 
 ## Overview
 
-This repository delivers a **map-based roofing lead CRM** for sales teams to explore properties in a service area, surface aging roofs and long-open permits, inspect contractor and BBB details, and save prospects as managed CRM records. It implements the **Roofing CRM & Lead Identification** user story: lead discovery and qualification on pre-existing property/permit data, without building ingestion pipelines. The UI is a static **Leaflet** front end (`wwwroot/`) backed by an **ASP.NET Core** API for CRM persistence and **RAG** search. A natural-language **Ask AI** flow combines vector retrieval, deterministic query constraints, and a grounded chat completion so users can narrow the map to relevant opportunities inside the current search radius.
+**What it is:** A map-first CRM that helps roofing sales find leads near a chosen location—by aging roof, open permit, radius, and filters—and save them for follow-up.
+
+**How it’s built:**
+
+- **Browser:** Map, filters, and lead list run in JavaScript over bundled demo properties (`app.js`).
+- **Server (ASP.NET Core):** `POST/GET/PUT/DELETE /api/leads` reads and writes saved leads in `data/db.json`.
+- **Ask AI:** The UI sends your prompt plus map center and radius to `POST /api/search/prompt`; the server embeds the question, retrieves matching property facts from an in-memory index, and returns property IDs for the map to highlight—no separate property database.
 
 ---
 
@@ -35,35 +41,19 @@ flowchart LR
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - Valid **OpenAI API key** with access to the configured chat and embedding models
 
-### Clone and install
+### Install and run
 
 ```bash
 git clone <your-repo-url> roofing-crm
+
 cd roofing-crm
-dotnet restore roofing-crm.csproj
-```
 
-`dotnet build roofing-crm.csproj -c Release` completes successfully on a fresh restore (verified in this repo).
-
-### Run
-
-```bash
 dotnet run --project roofing-crm.csproj
 ```
 
 Open the URL shown in the console (default profile: **http://localhost:5271**).
 
-Wait for log lines indicating the vector index is ready before using **Ask AI**.
-
-### Run (published build)
-
-```bash
-dotnet publish roofing-crm.csproj -c Release -o ./publish
-export OPENAI_API_KEY="sk-your-key"   # or set in PowerShell
-dotnet ./publish/RoofingCrm.dll
-```
-
----
+**NOTE:** Wait for log lines indicating the vector index is ready before using **Ask AI**.
 
 ## How to verify it works
 
