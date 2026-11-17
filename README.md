@@ -1,5 +1,7 @@
 # Roofing CRM — map-based lead identification
 
+**Live app:** [https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net/](https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net/) (Azure App Service; APIs on the same origin).
+
 ## Overview
 
 **What it is:** A map-first CRM that helps roofing sales find leads near a chosen location—by aging roof, open permit, radius, and filters—and save them for follow-up.
@@ -23,8 +25,6 @@ flowchart LR
   API --> RAG[RAG search]
   RAG --> OAI[OpenAI]
 ```
-
-
 
 **Design choices**
 
@@ -55,46 +55,12 @@ Open the URL shown in the console (default profile: **http://localhost:5271**).
 
 **NOTE:** Wait for log lines indicating the vector index is ready before using **Ask AI**.
 
-## How to verify it works
-
-Default demo data is **Travis County / Austin** (`MOCK_PROPERTIES` in `wwwroot/app.js`).
-
-### Sample API inputs / outputs
-
-**RAG search**
-
-```bash
-curl -s -X POST http://localhost:5271/api/search/prompt \
-  -H "Content-Type: application/json" \
-  -d "{\"prompt\":\"open roofing permits older than five years\",\"latitude\":30.2672,\"longitude\":-97.7431,\"radiusMiles\":5}"
-```
-
-Expected (shape): JSON with `matchedProperties` (array of `propertyId`, `address`, `latitude`, `longitude`), `answer` (string), and `retrievedContext` (string array). Example property id for a long-open permit in demo data: `"p5"` (9901 Brodie Ln).
-
-**Create CRM lead** (normally done from UI; API for verification)
-
-```bash
-curl -s -X POST http://localhost:5271/api/leads \
-  -H "Content-Type: application/json" \
-  -d "{\"propertyId\":\"p1\",\"address\":\"1204 Barton Springs Rd\",\"city\":\"Austin\",\"latitude\":30.2634,\"longitude\":-97.7712,\"roofAgeYears\":22,\"permitOpen\":true,\"permitOpenYears\":6,\"permitStatus\":\"Open\",\"contractorName\":\"Lone Star Roofing LLC\",\"bbbRating\":\"B+\",\"leadSignals\":[\"aging\",\"permit\"]}"
-```
-
-Expected: HTTP **201** with JSON body including `id`, `status`: `"New"`. Repeating the same `propertyId` → HTTP **409**.
-
-**List leads**
-
-```bash
-curl -s http://localhost:5271/api/leads
-```
-
-Expected: JSON array of saved leads.
-
 ### Quick UI smoke path (≈2 minutes)
 
-1. `dotnet run` with `OPENAI_API_KEY` set → open http://localhost:5271
-2. Confirm lead candidates appear at default center and 5 mi radius
-3. Open **9901 Brodie Ln** → verify permit 8 yr open, contractor, BBB **C**
-4. **Save to CRM** → drawer shows one lead
+1. Open the [live app](https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net/) or run locally (`dotnet run` with `OPENAI_API_KEY` → http://localhost:5271)
+2. Use filters and see how map adjusts according to it's values.
+3. Focus any lead and explore it's details.
+4. Save selected lead to CRM.
 5. Run Ask AI sample prompt → list/map narrows to matching properties
 
 ---
