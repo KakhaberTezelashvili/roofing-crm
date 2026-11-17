@@ -555,6 +555,16 @@ function resetFiltersToDefault() {
   if (minRoofAgeEl) minRoofAgeEl.value = String(DEFAULT_FILTERS.minRoofAgeYears);
   if (filterOpenPermitEl) filterOpenPermitEl.checked = DEFAULT_FILTERS.includeOpenPermit;
   if (minPermitYearsEl) minPermitYearsEl.value = String(DEFAULT_FILTERS.minPermitOpenYears);
+
+  selectedLeadId = null;
+  searchMarker?.closePopup();
+  map?.closePopup();
+
+  setSearchCenter(TRAVIS_COUNTY.latitude, TRAVIS_COUNTY.longitude, { pan: false });
+  if (map) {
+    map.setView([TRAVIS_COUNTY.latitude, TRAVIS_COUNTY.longitude], TRAVIS_COUNTY.zoom);
+  }
+
   onCriteriaChange();
 }
 
