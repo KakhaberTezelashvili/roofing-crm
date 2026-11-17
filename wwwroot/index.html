@@ -15,7 +15,6 @@
 <body>
   <div class="app-shell">
     <header class="app-header">
-      <p class="app-header__brand">Roofing CRM</p>
       <nav class="module-nav" aria-label="CRM modules">
         <span class="module-tab is-active" aria-current="page">Lead identification</span>
         <span class="module-tab is-disabled" aria-disabled="true" title="Coming soon — not in this release">Pipeline</span>
@@ -63,21 +62,24 @@
         <button type="button" id="clear-filters" class="btn-ghost">Clear filters</button>
       </div>
       <details class="prompt-panel" id="prompt-panel">
-        <summary class="prompt-panel__summary">Natural language search</summary>
-        <form id="search-prompt-form" class="prompt-panel__body" aria-label="Search prompt">
-          <textarea
-            id="search-prompt"
-            name="prompt"
-            class="prompt-field"
-            rows="2"
-            aria-label="Search prompt"
-            placeholder="Describe roofing opportunities you're looking for…"
-          ></textarea>
-          <div class="prompt-panel__actions">
-            <button type="submit" id="search-prompt-submit" class="btn-primary btn-compact">Search</button>
-          </div>
-          <p id="search-prompt-status" class="panel-hint prompt-panel__status" hidden></p>
-        </form>
+        <summary class="prompt-panel__summary">Ask AI</summary>
+        <div class="prompt-panel__content">
+          <form id="search-prompt-form" class="prompt-panel__row" aria-label="Search prompt">
+            <input
+              type="text"
+              id="search-prompt"
+              name="prompt"
+              class="prompt-field"
+              autocomplete="off"
+              aria-label="Search prompt"
+              placeholder="e.g. open roofing permits older than five years"
+            />
+            <button type="submit" id="search-prompt-submit" class="btn-primary btn-compact prompt-panel__submit">
+              Search
+            </button>
+          </form>
+          <p id="search-prompt-status" class="prompt-panel__status" hidden aria-live="polite"></p>
+        </div>
       </details>
     </section>
     <div class="main">
@@ -122,6 +124,6 @@
   ></script>
   <script src="app.js"></script>
   <script src="crm.js"></script>
-  <script src="search-prompt.js?v=2"></script>
+  <script src="search-prompt.js?v=3"></script>
 </body>
 </html>
