@@ -1,66 +1,50 @@
-# Roofing CRM
+## Live Runtime
+https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net/
 
-[**Live app**](https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net/) · [**Demo video**](https://www.loom.com/share/c450afb1118c42cf8b31b580db7b7010)
+## Demo Video
+https://www.loom.com/share/c450afb1118c42cf8b31b580db7b7010
 
-## Overview
+## Requirements
 
-**What it is:** A map-first CRM that helps roofing sales find leads near a chosen location—by aging roof, open permit, radius, and filters—and save them for follow-up.
+Map-based CRM for roofing companies to find and qualify residential and
+commercial roofing leads. Data ingestion is out of scope; the app consumes
+pre-existing property and permit data.
 
-**How it’s built:**
+- Map and search default to a specific county
+- Center search on current GPS location and/or a dropped pin
+- Configurable search radius
+- Show properties with roofs older than a configurable threshold (default 15 years)
+- Show properties with open roofing permits, emphasizing long-open permits
+- Permit details in the UI: status, open duration, contractor name, BBB rating (when available)
+- Browsable list of matching lead candidates from the map/radius filters
+- Create and manage CRM lead records from properties and permits
+- RAG-backed agent answering natural-language roofing opportunity queries
+- Disabled/placeholder sections for future CRM expansion
 
-- **Browser:** Map, filters, and lead list run in JavaScript over bundled demo properties (`app.js`).
-- **Server (ASP.NET Core):** `POST/GET/PUT/DELETE /api/leads` reads and writes saved leads in `data/db.json`.
-- **Ask AI:** The UI sends your prompt plus map center and radius to `POST /api/search/prompt`; the server embeds the question, retrieves matching property facts from an in-memory index, and returns property IDs for the map to highlight—no separate property database.
+## Setup Instructions
 
----
+**Quickest option:** use the Live Runtime link above. No setup is needed, and the OpenAI key is already configured there.
 
-## Architecture
+**Running locally**
 
-One **ASP.NET Core** app serves the static UI and two APIs. The **map and filters** run in the browser over demo data in `wwwroot/app.js`. **Saved leads** go to `data/db.json`. **Ask AI** uses seeded facts in `RoofingKnowledgeSeed`, an in-memory vector index built at startup, and OpenAI for embeddings and a short grounded answer.
+Prerequisites:
+- .NET 10 SDK
+- A working OpenAI API key with access to the configured LLM and embedding models: `gpt-4o-mini` and `text-embedding-3-small`, set in an environment variable named `OPENAI_API_KEY`. 
+  This is required for the natural-language (RAG agent) search. 
+  The rest of the app (map, filters, permits, leads) works without it.
 
-```mermaid
-flowchart LR
-  UI[Browser UI] --> API[ASP.NET Core]
-  API --> CRM[(db.json)]
-  API --> RAG[RAG search]
-  RAG --> OAI[OpenAI]
-```
-
-**Design choices**
-
-- Database - in-memory JSON file.
-- RAG - retrieve top‑K similar docs from in-memory vector store.
-- Models: `text-embedding-3-small`, `gpt-4o-mini` (see `appsettings.json`).
-
----
-
-## Setup and run instructions
-
-### Prerequisites
-
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- Valid **OpenAI API key** with access to the configured chat and embedding models
-
-### Install and run
-
+Steps:
 ```bash
 git clone https://github.com/KakhaberTezelashvili/roofing-crm
-
 cd roofing-crm
+
+# Set the OpenAI key (required for natural-language search)
+# macOS/Linux:
+export OPENAI_API_KEY="<your-key>"
+# Windows PowerShell:
+# $env:OPENAI_API_KEY="<your-key>"
 
 dotnet run
 ```
 
-Open the URL shown in the console (default profile: **http://localhost:5271**).
-
-**NOTE:** Wait for log lines indicating the vector index is ready before using **Ask AI**.
-
-### Quick UI smoke path (≈2 minutes)
-
-1. Open [Live app](https://roofingcrm-gge5f4h4f9c6ecem.westus3-01.azurewebsites.net/) or run locally (`dotnet run` with `OPENAI_API_KEY` → http://localhost:5271)
-2. Use filters and see how map adjusts according to it's values.
-3. Focus any lead and explore it's details.
-4. Save selected lead to CRM.
-5. Run Ask AI sample prompt → list/map narrows to matching properties
-
----
+Then open: http://localhost:5271/
